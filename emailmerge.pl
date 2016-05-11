@@ -15,10 +15,11 @@ use warnings;
 use Email::Send
     ; # Needs bug fixed sub datasend and "%S" in Net::SMTP::TLS,
       # see bug ID 33031 and 35606 on CPAN.
-use Email::MIME::Creator;
-use MIME::Words qw/encode_mimewords/;
+      # libemail-send-perl
+use Email::MIME::Creator; # libemail-mime-creator-perl
+use MIME::EncWords qw/encode_mimewords/; # libmime-encwords-perl
 use IO::All;
-use DBI;
+use DBI; # libclass-dbi-mysql-perl mysql-server
 
 my %settings = (
     SMTP        => 'smtp.gmail.com',
