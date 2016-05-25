@@ -13,11 +13,14 @@
 use strict;
 use warnings;
 use Email::Sender::Simple qw(sendmail); # libemail-sender-perl
-use Email::Sender::Transport::SMTPS (); # libemail-sender-transport-smtps-perl
+use Email::Sender::Transport::SMTPS; # libemail-sender-transport-smtps-perl
+#use Email::MIME;
 use Email::MIME::Creator; # libemail-mime-creator-perl
 use MIME::EncWords qw/encode_mimewords/; # libmime-encwords-perl
 use IO::All;
 use DBI; # libclass-dbi-mysql-perl mysql-server
+#use Email::Simple;
+use Email::Simple::Creator;
 
 my %settings = (
     SMTP        => 'smtp.gmail.com',
@@ -91,7 +94,7 @@ for my $row (@$as) {
                 encoding     => '8bit',
                 charset      => 'utf-8',
             },
-            body => $body_text,
+            body_str => $body_text,
         ),
         Email::MIME->create(
             attributes => {
@@ -106,6 +109,18 @@ for my $row (@$as) {
     );
 
     my $email = Email::MIME->create(
+        header_str => [
+            From         => $settings{FROM},
+            'Reply-To'   => $settings{REPLY_TO},
+            To           => $row->{cEmail},
+            'User-Agent' => $settings{USER_AGENT},
+            Subject      => encode_mimewords( $settings{SUBJECT} ),
+        ],
+        #attributes => { charset => '', },
+        parts      => [@parts],
+    );
+
+    my $email = Email::Simple->create(
         header => [
             From         => $settings{FROM},
             'Reply-To'   => $settings{REPLY_TO},
@@ -113,9 +128,9 @@ for my $row (@$as) {
             'User-Agent' => $settings{USER_AGENT},
             Subject      => encode_mimewords( $settings{SUBJECT} ),
         ],
-        attributes => { charset => '', },
-        parts      => [@parts],
+        body => $body_text,
     );
+
     sleep $settings{DELAY};
     eval { sendmail($email, { transport => $transport }) };
     die "Error sending email: $@" if $@;
