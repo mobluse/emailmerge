@@ -28,10 +28,10 @@ my %settings = (
     FROM        => 'Firstname Lastname <firstname.lastname@gmail.com>',
     REPLY_TO    => 'firstname.lastname@gmail.com',
     USER_AGENT  => 'Thunderbird 2.0.0.14 (X11/20080505)',
-    TEMPLATE    => 5,
+    TEMPLATE    => 1,
     UPLDDIR => '../Documents/CV',
-    DELAY   => 30, # seconds
-    DB      => 'riksdagen',
+    DELAY   => 5, # seconds
+    DB      => 'fagel',
     DB_HOST => 'localhost',
 );
 @ARGV == 4
@@ -87,7 +87,9 @@ for my $row (@$as) {
     my $body_text = $settings{BODY};
     for my $heading (keys %$row) {
         $body_text =~ s/\$$heading/$row->{$heading}/g;
+        print "$heading: $row->{$heading}\n";
     }
+    print "$body_text\n";
 
     # multipart message
     my @parts = (
