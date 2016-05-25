@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
-# emailmerge.pl v0.4.0 -- A bulk email merge script/program for keeping contact, sending
+# emailmerge.pl v0.5.0 -- A bulk email merge script/program for keeping contact, sending
 # invitations, applying for jobs, CRM etc. by sending personalized emails.
 # For examples of usage, see <http://en.wikipedia.org/wiki/Mail_merge>.
 # Author: Mikael O. Bonnier, mikael.bonnier@gmail.com, http://www.df.lth.se.orbin.se/~mikaelb/
-# Copyright (C) 2008 Mikael O. Bonnier, Lund, Sweden.
+# Copyright (C) 2008, 2016 Mikael O. Bonnier, Lund, Sweden.
 # License  GPLv3+:  GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 # This  is  free  software:  you  are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
@@ -12,10 +12,8 @@
 
 use strict;
 use warnings;
-use Email::Send
-    ; # Needs bug fixed sub datasend and "%S" in Net::SMTP::TLS,
-      # see bug ID 33031 and 35606 on CPAN.
-      # libemail-send-perl
+use Email::Sender::Simple qw(sendmail); # libemail-sender-perl
+use Email::Sender::Transport::SMTPS (); # libemail-sender-transport-smtps-perl
 use Email::MIME::Creator; # libemail-mime-creator-perl
 use MIME::EncWords qw/encode_mimewords/; # libmime-encwords-perl
 use IO::All;
@@ -70,18 +68,13 @@ while ( my $hr = $sth->fetchrow_hashref ) {
     push @$as, $hr;
 }
 
-my $mailer = Email::Send->new(
-    {
-        mailer      => 'SMTP::TLS',
-        mailer_args => [
-            Host     => $settings{SMTP},
-            Port     => $settings{PORT},
-            User     => $settings{USER},
-            Password => $settings{PASS},
-            Hello    => $settings{FROM_DOMAIN},
-        ]
-    }
-);
+my $transport = Email::Sender::Transport::SMTPS->new({
+  host => $settings{SMTP},
+  port => $settings{PORT},
+  ssl => "starttls",
+  sasl_username => $settings{USER},
+  sasl_password => $settings{PASS},
+});
 
 for my $row (@$as) {
     my $body_text = $settings{BODY};
@@ -89,7 +82,6 @@ for my $row (@$as) {
         $body_text =~ s/\$$heading/$row->{$heading}/g;
         print "$heading: $row->{$heading}\n";
     }
-    print "$body_text\n";
 
     # multipart message
     my @parts = (
@@ -125,7 +117,7 @@ for my $row (@$as) {
         parts      => [@parts],
     );
     sleep $settings{DELAY};
-    eval { $mailer->send($email) };
+    eval { sendmail($email, { transport => $transport }) };
     die "Error sending email: $@" if $@;
     $q = qq|UPDATE Contacts
        SET cSentLast = now()

@@ -1,6 +1,5 @@
 #!/bin/sh
-sudo apt-get update && sudo apt-get -y upgrade
-sudo apt-get -y install libemail-send-perl libemail-mime-creator-perl libnet-smtp-tls-perl
-sudo apt-get -y install libmime-encwords-perl libclass-dbi-mysql-perl
-sudo apt-get -y install mysql-server
-sudo apt-get -y autoremove
+sudo apt-get update
+sudo apt-get -y install libemail-sender-perl libemail-sender-transport-smtps-perl
+sudo apt-get -y install libemail-mime-creator-perl libmime-encwords-perl
+sudo apt-get -y install libclass-dbi-mysql-perl mysql-server
