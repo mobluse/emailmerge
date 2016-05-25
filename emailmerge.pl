@@ -29,7 +29,7 @@ my %settings = (
     TEMPLATE    => 1,
     UPLDDIR => '../Documents/CV',
     DELAY   => 5, # seconds
-    DB      => 'fagel',
+    DB      => 'riksdagen',
     DB_HOST => 'localhost',
 );
 @ARGV == 4
